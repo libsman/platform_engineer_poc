@@ -3,6 +3,8 @@ name: PR Validate
 on:
   pull_request:
     branches: [main]
+  push:
+    branches: [main] # Security-Scan auch auf dem Default-Branch (GitHub Security Tab)
 
 permissions:
   id-token: write # OIDC-Token für Azure Login — keine Secrets im Repo!
@@ -75,6 +77,7 @@ jobs:
   # -------------------------------------------------------------------------
   plan:
     name: Plan (${{ matrix.env }})
+    if: github.event_name == 'pull_request' # OIDC-Credential ist auf PR-Kontext gescoped
     needs: [lint, security]
     runs-on: ubuntu-latest
     strategy:

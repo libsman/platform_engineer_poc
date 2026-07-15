@@ -150,3 +150,46 @@ jobs:
       - name: Terragrunt Apply (prod)
         working-directory: live/prod
         run: terragrunt run --all apply --tf-forward-stdout
+
+  deploy-app-prod:
+    name: Deploy app (prod)
+    needs: deploy-prod
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Inject App Insights connection string
+        run: |
+          CS=$(az resource show \
+            --resource-group rg-poc-prod \
+            --name appi-poc-prod \
+            --resource-type "Microsoft.Insights/components" \
+            --query properties.ConnectionString -o tsv)
+          sed -i "s|__APPINSIGHTS_CONNECTION_STRING__|$CS|" app/index.html
+
+      - name: Fetch SWA deployment token
+        id: swa-token
+        run: |
+          TOKEN=$(az staticwebapp secrets list \
+            --name stapp-poc-prod \
+            --resource-group rg-poc-prod \
+            --query properties.apiKey -o tsv)
+          echo "::add-mask::$TOKEN"
+          echo "token=$TOKEN" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy static site
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ steps.swa-token.outputs.token }}
+          action: upload
+          app_location: app
+          skip_app_build: true
+          skip_api_build: true
