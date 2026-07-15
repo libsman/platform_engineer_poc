@@ -19,6 +19,21 @@ resource "azurerm_subscription_policy_assignment" "allowed_locations" {
   })
 }
 
+# --- Allowed locations for resource groups (Deny) ---------------------------
+# Die Standard-Location-Policy greift NICHT für Resource Groups selbst,
+# dafür existiert eine eigene Built-in-Definition.
+resource "azurerm_subscription_policy_assignment" "allowed_locations_rg" {
+  name                 = "allowed-locations-rg"
+  display_name         = "Allowed locations for resource groups (EU only)"
+  subscription_id      = data.azurerm_subscription.current.id
+  policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/e765b5de-1225-4ba3-bd56-1ac6695af988"
+  description          = "Deny resource groups outside approved EU regions. Managed by Terraform."
+
+  parameters = jsonencode({
+    listOfAllowedLocations = { value = var.allowed_locations }
+  })
+}
+
 # --- Require env tag on resource groups (Deny) -----------------------------
 resource "azurerm_subscription_policy_assignment" "require_env_tag_on_rg" {
   name                 = "require-env-tag-rg"

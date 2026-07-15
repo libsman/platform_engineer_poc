@@ -19,7 +19,8 @@ $StateRg         = "rg-tfstate"
 $StateSa         = "sttfstatelibsman"
 $StateContainer  = "tfstate"
 $AppName         = "github-oidc-platform-poc"
-$GithubRepo      = "libsman/platform_engineer_poc"
+# GitHub verwendet das neue immutable OIDC-Subject-Format: owner@ownerId/repo@repoId
+$GithubRepo      = "libsman@181856274/platform_engineer_poc@1301910177"
 
 $SubscriptionId = az account show --query id -o tsv
 $MyObjectId     = az ad signed-in-user show --query id -o tsv
