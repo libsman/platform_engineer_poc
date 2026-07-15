@@ -1,5 +1,5 @@
 # Golden Path: Static Web App (Workload)
-# Free SKU — 0 € — der Star der Demo ist die Plattform, nicht die App.
+# Free SKU — kostenloser Einstiegspunkt für statische Workloads.
 
 resource "azurerm_static_web_app" "this" {
   name                = var.name

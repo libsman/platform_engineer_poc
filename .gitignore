@@ -29,3 +29,7 @@ Thumbs.db
 
 # Checkov / SARIF
 results.sarif
+
+# Local notes (not part of the project)
+.local/
+

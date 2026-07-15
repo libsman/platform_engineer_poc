@@ -15,7 +15,7 @@ env:
   ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
   ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
   ARM_USE_OIDC: "true"
-  TERRAGRUNT_NON_INTERACTIVE: "true"
+  TG_NON_INTERACTIVE: "true"
 
 jobs:
   # -------------------------------------------------------------------------
@@ -105,7 +105,7 @@ jobs:
         id: plan
         working-directory: live/${{ matrix.env }}
         run: |
-          terragrunt run-all plan --tf-forward-stdout 2>&1 | tee plan.txt
+          terragrunt run --all plan --tf-forward-stdout 2>&1 | tee plan.txt
 
       - name: Plan als PR-Kommentar
         uses: actions/github-script@v7
