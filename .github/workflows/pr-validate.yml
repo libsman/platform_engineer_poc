@@ -104,6 +104,10 @@ jobs:
       - name: Terragrunt Plan
         id: plan
         working-directory: live/${{ matrix.env }}
+        shell: bash # aktiviert pipefail — sonst maskiert `tee` einen Plan-Fehler
+        env:
+          TG_NO_COLOR: "true"
+          TF_CLI_ARGS: "-no-color"
         run: |
           terragrunt run --all plan --tf-forward-stdout 2>&1 | tee plan.txt
 

@@ -42,22 +42,13 @@ remote_state {
 }
 
 # --- Provider-Generierung ---------------------------------------------------
+# Versions-Constraints (required_version/required_providers) liegen bewusst
+# in den Modulen selbst (versions.tf) — hier wird nur der Provider konfiguriert.
 generate "provider" {
   path      = "provider.tf"
   if_exists = "overwrite"
 
   contents = <<EOF
-terraform {
-  required_version = ">= 1.9.0"
-
-  required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "~> 4.37"
-    }
-  }
-}
-
 provider "azurerm" {
   subscription_id                 = "${local.subscription_id}"
   storage_use_azuread             = true
