@@ -8,4 +8,10 @@ resource "azurerm_static_web_app" "this" {
   sku_tier            = "Free"
   sku_size            = "Free"
   tags                = var.tags
+
+  lifecycle {
+    # Wird vom Content-Deployment (SWA deploy action) gesetzt —
+    # gehört zur App-Auslieferung, nicht zur Infrastruktur.
+    ignore_changes = [repository_url, repository_branch]
+  }
 }
