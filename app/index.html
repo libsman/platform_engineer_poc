@@ -3,47 +3,387 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Azure Platform Golden Path</title>
+  <title>Platform Portal</title>
   <style>
     :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
     body {
       font-family: 'Segoe UI', system-ui, sans-serif;
-      background: linear-gradient(135deg, #0f1b2d 0%, #1a2f4a 100%);
-      color: #e8eef7; margin: 0; min-height: 100vh;
-      display: flex; align-items: center; justify-content: center;
+      background: #0d1117; color: #e6edf3; margin: 0; min-height: 100vh;
     }
+    nav {
+      background: #161b22; border-bottom: 1px solid #30363d; padding: 0 2rem;
+      display: flex; align-items: center; gap: 2rem; height: 56px;
+    }
+    .nav-brand { font-weight: 700; font-size: 1rem; }
+    .nav-links { display: flex; gap: .25rem; }
+    .nav-links a {
+      padding: .4rem .8rem; border-radius: 6px; color: #8b949e; text-decoration: none;
+      font-size: .875rem; cursor: pointer; transition: background .15s, color .15s;
+    }
+    .nav-links a.active, .nav-links a:hover { background: rgba(255,255,255,.06); color: #e6edf3; }
+    .nav-badge {
+      margin-left: auto; background: #2563eb22; color: #7fb3ff;
+      border: 1px solid #2563eb55; padding: .2rem .7rem; border-radius: 999px; font-size: .75rem;
+    }
+    main { padding: 2rem; max-width: 960px; margin: 0 auto; }
+    .page { display: none; } .page.active { display: block; }
+    .hero { padding: 2.5rem 0 1.5rem; }
+    .hero h1 { font-size: 1.8rem; margin: 0 0 .5rem; }
+    .hero p { color: #8b949e; max-width: 560px; line-height: 1.6; margin: 0; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-top: 2rem; }
     .card {
-      background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12);
-      border-radius: 16px; padding: 3rem; max-width: 640px; backdrop-filter: blur(8px);
+      background: #161b22; border: 1px solid #30363d; border-radius: 10px;
+      padding: 1.25rem; cursor: pointer; transition: border-color .15s;
     }
-    h1 { margin-top: 0; font-size: 1.6rem; }
-    .badge {
-      display: inline-block; background: #2563eb33; color: #7fb3ff;
-      border: 1px solid #2563eb66; border-radius: 999px;
-      padding: .2rem .8rem; font-size: .8rem; margin: .15rem;
+    .card:hover { border-color: #2563eb; }
+    .card-icon { font-size: 1.5rem; margin-bottom: .75rem; }
+    .card h3 { font-size: .95rem; margin: 0 0 .3rem; }
+    .card p { font-size: .825rem; color: #8b949e; line-height: 1.5; margin: 0; }
+    .status-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: .75rem; margin-top: 2rem; }
+    .stat { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 1rem; }
+    .stat-label { font-size: .75rem; color: #8b949e; margin-bottom: .25rem; }
+    .stat-value { font-size: 1.4rem; font-weight: 700; }
+    .dot-green { display: inline-block; width: 8px; height: 8px; background: #3fb950; border-radius: 50%; margin-right: .4rem; }
+    .tag { display: inline-block; padding: .15rem .5rem; border-radius: 4px; font-size: .75rem; margin: .1rem; }
+    .tag-blue { background: #2563eb22; color: #7fb3ff; }
+    .tag-orange { background: #d9730033; color: #ffa657; }
+    .form-card { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 1.75rem; max-width: 660px; }
+    .field { margin-bottom: 1.25rem; }
+    .field label { display: block; font-size: .825rem; color: #8b949e; margin-bottom: .4rem; }
+    .field input, .field select {
+      width: 100%; background: #0d1117; border: 1px solid #30363d; border-radius: 6px;
+      padding: .6rem .75rem; color: #e6edf3; font-size: .875rem; outline: none;
     }
-    p { line-height: 1.6; color: #b8c4d6; }
-    code { background: rgba(255,255,255,.1); padding: .1rem .4rem; border-radius: 4px; }
+    .field input:focus, .field select:focus { border-color: #2563eb; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .hint { font-size: .75rem; color: #8b949e; margin-top: .3rem; }
+    .section-label {
+      font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; color: #8b949e;
+      margin: 1.5rem 0 .75rem; padding-bottom: .4rem; border-bottom: 1px solid #30363d;
+    }
+    .btn { padding: .6rem 1.25rem; border-radius: 6px; border: none; cursor: pointer; font-size: .875rem; font-weight: 500; }
+    .btn-primary { background: #2563eb; color: #fff; } .btn-primary:hover { background: #1d4ed8; }
+    .btn-secondary { background: transparent; color: #e6edf3; border: 1px solid #30363d; }
+    .btn-green { background: #238636; color: #fff; } .btn-green:hover { background: #1a6e2e; }
+    .btn-row { display: flex; gap: .75rem; margin-top: 1.5rem; }
+    .preview-label {
+      font-size: .75rem; color: #8b949e; margin: 1rem 0 .3rem;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .copy-btn { background: none; border: 1px solid #30363d; color: #8b949e; padding: .2rem .6rem; border-radius: 4px; cursor: pointer; font-size: .75rem; }
+    pre#preview {
+      background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 1rem;
+      font-size: .8rem; font-family: 'Cascadia Code', Consolas, monospace; color: #79c0ff;
+      white-space: pre; overflow-x: auto; line-height: 1.6; margin: 0;
+    }
+    .success-box { background: #23863622; border: 1px solid #23863655; border-radius: 10px; padding: 1.5rem; margin-top: 1.5rem; display: none; }
+    .success-box.active { display: block; }
+    .success-box h3 { color: #56d364; margin: 0 0 .5rem; }
+    .success-box p { color: #8b949e; font-size: .875rem; line-height: 1.6; margin: 0; }
+    .success-box a { color: #7fb3ff; }
+    .env-table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: .875rem; }
+    .env-table th {
+      text-align: left; color: #8b949e; font-size: .75rem; text-transform: uppercase;
+      letter-spacing: .06em; padding: .6rem .75rem; border-bottom: 1px solid #30363d; font-weight: 500;
+    }
+    .env-table td { padding: .75rem; border-bottom: 1px solid #30363d88; }
+    .pill { display: inline-block; padding: .15rem .55rem; border-radius: 999px; font-size: .75rem; }
+    .pill-green { background: #23863633; color: #56d364; }
+    .pill-blue { background: #2563eb33; color: #7fb3ff; }
+    .pill-orange { background: #d9730033; color: #ffa657; }
+    a.link-btn { color: #7fb3ff; text-decoration: none; font-size: .8rem; }
+    .template-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-top: 1rem; }
+    .tpl-card { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 1.25rem; }
+    .tpl-card h3 { font-size: .95rem; margin: 0 0 .4rem; }
+    .tpl-card p { font-size: .825rem; color: #8b949e; line-height: 1.5; margin: 0 0 .75rem; }
+    .service-row {
+      display: flex; align-items: center; gap: 1rem; background: #161b22;
+      border: 1px solid #30363d; border-radius: 10px; padding: 1rem; margin-bottom: .6rem;
+    }
+    .service-icon { font-size: 1.5rem; width: 2.5rem; text-align: center; }
+    .service-info { flex: 1; }
+    .service-info h3 { font-size: .9rem; margin: 0; }
+    .service-info p { font-size: .8rem; color: #8b949e; margin: .15rem 0 0; }
+    .page-header { margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: flex-end; }
+    .page-header h2 { font-size: 1.3rem; margin: 0; }
+    .page-header p { font-size: .875rem; color: #8b949e; margin: .2rem 0 0; }
   </style>
 </head>
 <body>
-  <main class="card">
-    <h1>🚀 Deployed via the Golden Path</h1>
-    <p>
-      This page was provisioned end-to-end as code: Terraform modules, Terragrunt
-      orchestration, GitHub Actions with OIDC — no secrets, no clicks, no drift.
-    </p>
-    <div>
-      <span class="badge">Terraform</span>
-      <span class="badge">Terragrunt</span>
-      <span class="badge">GitHub Actions + OIDC</span>
-      <span class="badge">Azure Policy</span>
-      <span class="badge">Checkov</span>
-      <span class="badge">App Insights</span>
-      <span class="badge">FinOps Budget</span>
+  <nav>
+    <div class="nav-brand">🏗 Platform Portal</div>
+    <div class="nav-links">
+      <a class="active" onclick="show('home', this)">Home</a>
+      <a onclick="show('environments', this)">Environments</a>
+      <a onclick="show('templates', this)">Templates</a>
+      <a onclick="show('services', this)">Services</a>
+      <a onclick="show('request', this)">＋ New Request</a>
     </div>
-    <p>Telemetry for this page flows into <code>Application Insights</code> — check the Live Metrics stream.</p>
+    <div class="nav-badge">Golden Path v1</div>
+  </nav>
+  <main>
+
+    <!-- ═════════ HOME ═════════ -->
+    <div id="page-home" class="page active">
+      <div class="hero">
+        <h1>Internal Developer Platform</h1>
+        <p>Provision Azure infrastructure through the golden path — security, cost guardrails
+           and policy compliance built in. No tickets, no waiting.</p>
+      </div>
+      <div class="status-row">
+        <div class="stat"><div class="stat-label">Environments</div><div class="stat-value"><span class="dot-green"></span>4</div></div>
+        <div class="stat"><div class="stat-label">Policy Compliance</div><div class="stat-value" style="color:#56d364">100 %</div></div>
+        <div class="stat"><div class="stat-label">Budget Alerts</div><div class="stat-value">2</div></div>
+        <div class="stat"><div class="stat-label">Infra Cost (MTD)</div><div class="stat-value">~0 €</div></div>
+      </div>
+      <div class="cards">
+        <div class="card" onclick="show('request', navLink(4))">
+          <div class="card-icon">⚡</div>
+          <h3>Provision new environment</h3>
+          <p>Pick a template, fill in details, raise a PR — CI/CD takes it from there.</p>
+        </div>
+        <div class="card" onclick="show('environments', navLink(1))">
+          <div class="card-icon">🗂</div>
+          <h3>View environments</h3>
+          <p>Browse deployed environments with status, owner and compliance info.</p>
+        </div>
+        <div class="card" onclick="show('templates', navLink(2))">
+          <div class="card-icon">📦</div>
+          <h3>Browse templates</h3>
+          <p>Explore the available golden-path workload templates.</p>
+        </div>
+        <div class="card" onclick="window.open('https://github.com/libsman/platform_engineer_poc','_blank')">
+          <div class="card-icon">🔍</div>
+          <h3>Inspect the platform</h3>
+          <p>All modules, policies and pipelines are open on GitHub — no black boxes.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═════════ ENVIRONMENTS ═════════ -->
+    <div id="page-environments" class="page">
+      <div class="page-header">
+        <div><h2>Environments</h2><p>All active environments managed by this platform.</p></div>
+        <button class="btn btn-primary" onclick="show('request', navLink(4))">＋ New</button>
+      </div>
+      <table class="env-table">
+        <thead><tr><th>Name</th><th>Template</th><th>Region</th><th>Owner</th><th>Status</th><th>Compliance</th><th></th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>poc-dev</strong></td><td><span class="tag tag-blue">Static Web App</span></td>
+            <td>westeurope</td><td>liban-osman</td>
+            <td><span class="pill pill-green">● running</span></td>
+            <td><span class="pill pill-green">✔ compliant</span></td>
+            <td><a class="link-btn" href="https://thankful-rock-0cde05403.7.azurestaticapps.net" target="_blank">↗ open</a></td>
+          </tr>
+          <tr>
+            <td><strong>poc-prod</strong></td><td><span class="tag tag-blue">Static Web App</span></td>
+            <td>westeurope</td><td>liban-osman</td>
+            <td><span class="pill pill-green">● running</span></td>
+            <td><span class="pill pill-green">✔ compliant</span></td>
+            <td><a class="link-btn" href="https://wonderful-coast-0b605a403.7.azurestaticapps.net" target="_blank">↗ open</a></td>
+          </tr>
+          <tr>
+            <td><strong>platform-global</strong></td><td><span class="tag tag-orange">Governance</span></td>
+            <td>subscription</td><td>platform-team</td>
+            <td><span class="pill pill-green">● active</span></td>
+            <td><span class="pill pill-green">✔ 4 policies</span></td>
+            <td><a class="link-btn" href="https://portal.azure.com" target="_blank">↗ portal</a></td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="hint" style="margin-top:1rem">Demo data — a production portal would query Azure Resource Graph for live inventory.</p>
+    </div>
+
+    <!-- ═════════ TEMPLATES ═════════ -->
+    <div id="page-templates" class="page">
+      <div class="page-header">
+        <div><h2>Templates</h2><p>Golden-path workload templates. All include governance, monitoring and cost guardrails.</p></div>
+      </div>
+      <div class="template-grid">
+        <div class="tpl-card">
+          <h3>🌐 Static Web App</h3>
+          <p>Serverless static hosting. Zero-cost Free SKU with App Insights telemetry and budget alert.</p>
+          <div><span class="tag tag-blue">SWA Free</span><span class="tag tag-blue">App Insights</span><span class="tag tag-blue">Budget Alert</span></div>
+          <button class="btn btn-primary" style="font-size:.8rem;padding:.4rem .9rem;margin-top:.75rem" onclick="show('request', navLink(4))">Use template</button>
+        </div>
+        <div class="tpl-card" style="opacity:.55">
+          <h3>🌐🗄 SWA + Cosmos DB</h3>
+          <p>Full-stack serverless: SWA front-end + Cosmos DB Free Tier (400 RU/s, 25 GB). <em>(coming soon)</em></p>
+          <div><span class="tag tag-orange">planned</span></div>
+          <button class="btn btn-secondary" style="font-size:.8rem;padding:.4rem .9rem;margin-top:.75rem" disabled>Coming soon</button>
+        </div>
+        <div class="tpl-card" style="opacity:.55">
+          <h3>🐳 Container App</h3>
+          <p>Azure Container Apps with KEDA autoscaling. <em>(coming soon)</em></p>
+          <div><span class="tag tag-orange">planned</span></div>
+          <button class="btn btn-secondary" style="font-size:.8rem;padding:.4rem .9rem;margin-top:.75rem" disabled>Coming soon</button>
+        </div>
+        <div class="tpl-card" style="opacity:.55">
+          <h3>🔑 Key Vault + Managed Identity</h3>
+          <p>Secret management baseline for any workload. <em>(coming soon)</em></p>
+          <div><span class="tag tag-orange">planned</span></div>
+          <button class="btn btn-secondary" style="font-size:.8rem;padding:.4rem .9rem;margin-top:.75rem" disabled>Coming soon</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═════════ SERVICES ═════════ -->
+    <div id="page-services" class="page">
+      <div class="page-header">
+        <div><h2>Platform Services</h2><p>Shared capabilities provided by the platform team.</p></div>
+      </div>
+      <div class="service-row"><div class="service-icon">🔒</div><div class="service-info"><h3>OIDC Identity Federation</h3><p>Pipelines authenticate to Azure via short-lived tokens — no stored secrets anywhere.</p></div><span class="pill pill-green">● active</span></div>
+      <div class="service-row"><div class="service-icon">📋</div><div class="service-info"><h3>Azure Policy (4 assignments)</h3><p>EU-only regions, mandatory cost-center tags, tag inheritance. Enforced at ARM level.</p></div><span class="pill pill-green">● active</span></div>
+      <div class="service-row"><div class="service-icon">📊</div><div class="service-info"><h3>Shared Log Analytics Workspace</h3><p>Centralised logging. 31-day retention, 0.5 GB/day ingestion cap.</p></div><span class="pill pill-green">● active</span></div>
+      <div class="service-row"><div class="service-icon">💶</div><div class="service-info"><h3>FinOps Guardrails</h3><p>Per-environment budgets with actual + forecast alerts. Mandatory cost tagging.</p></div><span class="pill pill-green">● active</span></div>
+      <div class="service-row"><div class="service-icon">🛡</div><div class="service-info"><h3>IaC Security Scanning</h3><p>Checkov scans every PR and main. Findings in the GitHub Security tab.</p></div><span class="pill pill-green">● active</span></div>
+    </div>
+
+    <!-- ═════════ NEW REQUEST ═════════ -->
+    <div id="page-request" class="page">
+      <div class="page-header">
+        <div><h2>New Environment Request</h2><p>Fill in the form — the portal generates the Terragrunt config and opens the pull request for you.</p></div>
+      </div>
+      <div class="form-card">
+        <div class="section-label">Project</div>
+        <div class="field">
+          <label>Project name *</label>
+          <input id="f-project" type="text" placeholder="e.g. checkout-service" oninput="updatePreview()" />
+          <div class="hint">Lowercase, hyphens only — used for resource names and folder structure.</div>
+        </div>
+        <div class="field">
+          <label>Owner / Team *</label>
+          <input id="f-owner" type="text" placeholder="e.g. team-payments" oninput="updatePreview()" />
+        </div>
+        <div class="section-label">Infrastructure</div>
+        <div class="field-row">
+          <div class="field">
+            <label>Environment</label>
+            <select id="f-env" onchange="updatePreview()">
+              <option value="dev">dev</option>
+              <option value="prod">prod</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Region</label>
+            <select id="f-region" onchange="updatePreview()">
+              <option value="westeurope">westeurope (recommended)</option>
+              <option value="germanywestcentral">germanywestcentral</option>
+              <option value="northeurope">northeurope</option>
+            </select>
+            <div class="hint">Only EU regions — everything else is denied by Azure Policy anyway.</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Template</label>
+          <select id="f-template">
+            <option value="swa">Static Web App</option>
+          </select>
+        </div>
+        <div class="section-label">Generated Terragrunt Configuration</div>
+        <div class="preview-label">
+          <span id="preview-filename" style="font-family:monospace"></span>
+          <button class="copy-btn" onclick="copyPreview()">copy</button>
+        </div>
+        <pre id="preview"></pre>
+        <div class="btn-row">
+          <button class="btn btn-green" onclick="openPR()">⬆ Open as GitHub Pull Request</button>
+          <button class="btn btn-secondary" onclick="show('home', navLink(0))">Cancel</button>
+        </div>
+        <div id="success-box" class="success-box">
+          <h3>✔ GitHub editor opened</h3>
+          <p>The generated config is pre-filled in GitHub's web editor. Commit it to a
+             <strong>new branch</strong> and GitHub will prompt you to open a pull request.
+             The pipeline then runs <strong>fmt → tflint → Checkov → terragrunt plan</strong>
+             and posts the plan as a PR comment. After review &amp; merge, the environment
+             is provisioned automatically.<br><br>
+             <a href="https://github.com/libsman/platform_engineer_poc/pulls" target="_blank">→ View pull requests</a></p>
+        </div>
+      </div>
+    </div>
+
   </main>
+
+  <script>
+    function navLink(i) { return document.querySelectorAll('.nav-links a')[i]; }
+
+    function show(name, link) {
+      document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('active'); });
+      document.querySelectorAll('.nav-links a').forEach(function (a) { a.classList.remove('active'); });
+      document.getElementById('page-' + name).classList.add('active');
+      if (link) link.classList.add('active');
+      if (name === 'request') updatePreview();
+      if (window.appInsights && window.appInsights.trackPageView) {
+        window.appInsights.trackPageView({ name: 'portal/' + name });
+      }
+    }
+
+    function updatePreview() {
+      var proj  = (document.getElementById('f-project').value || 'my-project')
+                    .toLowerCase().replace(/[^a-z0-9-]/g, '') || 'my-project';
+      var owner = document.getElementById('f-owner').value || 'my-team';
+      var env   = document.getElementById('f-env').value;
+      var reg   = document.getElementById('f-region').value;
+
+      document.getElementById('preview-filename').textContent =
+        'live/' + env + '/' + proj + '/terragrunt.hcl';
+
+      var c = 'include "root" {\n' +
+        '  path = find_in_parent_folders("root.hcl")\n' +
+        '}\n\n' +
+        'locals {\n' +
+        '  env = read_terragrunt_config(\n' +
+        '    find_in_parent_folders("env.hcl")\n' +
+        '  ).locals.env\n' +
+        '}\n\n' +
+        'terraform {\n' +
+        '  source = "${get_repo_root()}/modules/static-web-app"\n' +
+        '}\n\n' +
+        'dependency "rg" {\n' +
+        '  config_path = "../resource-group"\n\n' +
+        '  mock_outputs = {\n' +
+        '    name = "rg-poc-mock"\n' +
+        '  }\n' +
+        '  mock_outputs_allowed_terraform_commands = ["validate", "plan"]\n' +
+        '}\n\n' +
+        'inputs = {\n' +
+        '  name                = "stapp-' + proj + '-${local.env}"\n' +
+        '  resource_group_name = dependency.rg.outputs.name\n' +
+        '  location            = "' + reg + '"\n' +
+        '  tags = {\n' +
+        '    env         = local.env\n' +
+        '    owner       = "' + owner + '"\n' +
+        '    cost_center = "platform-engineering"\n' +
+        '    managed_by  = "terraform"\n' +
+        '  }\n' +
+        '}\n';
+
+      document.getElementById('preview').textContent = c;
+      window._previewContent  = c;
+      window._previewProject  = proj;
+      window._previewEnv      = env;
+    }
+
+    function copyPreview() {
+      navigator.clipboard.writeText(window._previewContent || '');
+      var b = document.querySelector('.copy-btn');
+      b.textContent = 'copied!';
+      setTimeout(function () { b.textContent = 'copy'; }, 1500);
+    }
+
+    function openPR() {
+      var path = 'live/' + window._previewEnv + '/' + window._previewProject + '/terragrunt.hcl';
+      var url  = 'https://github.com/libsman/platform_engineer_poc/new/main' +
+                 '?filename=' + encodeURIComponent(path) +
+                 '&value=' + encodeURIComponent(window._previewContent || '');
+      window.open(url, '_blank');
+      document.getElementById('success-box').classList.add('active');
+    }
+
+    updatePreview();
+  </script>
 
   <!-- Application Insights: connection string injected at deploy time -->
   <script type="text/javascript">
